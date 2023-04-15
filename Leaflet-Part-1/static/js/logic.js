@@ -1,14 +1,13 @@
-// Storing API endpoint as variable
+// Storing API endpoint as variable.
 let url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
 
-// Retrieving earthquake data
+// Retrieving earthquake data.
 d3.json(url).then(function (data) {
-    // Once earthquake data is retrieved, pass into the createFeatures function for markers and map
+    // Once earthquake data is retrieved, pass into the createFeatures function for markers and map.
     createFeatures(data.features);
-    
   });
 
-// Function to set colour of markers
+// Function to set colour of markers.
 function colouring(depth) {
     if (-10 <= depth && depth < 10) {
       color = "#5ff94a";
@@ -27,12 +26,12 @@ function colouring(depth) {
     return color;
   }
 
-// Function to set size of markers
+// Function to set size of markers.
 function markerSize(magnitude) {
     return magnitude * 4.5;
   }
 
-// Function to parse data on each earthquake, build markers and pass to map creating function
+// Function to parse data on each earthquake, build markers and pass to map creating function.
 function createFeatures(earthquakeData) {
 
   // Creating popup to provide more information on each earthquake.
@@ -41,7 +40,7 @@ function createFeatures(earthquakeData) {
     Depth: ${feature.geometry.coordinates[2]}<br>Time: ${new Date(feature.properties.time)}</p>`);
   }
   
-  // Creating circle markers to display each earthquake, coloured according to depth and size proportional to magnitude
+  // Creating circle markers to display each earthquake, coloured according to depth and with size proportional to magnitude.
   function circleMarkers(feature, coordinate) {
     return L.circleMarker(coordinate, {
         radius : markerSize(feature.properties.mag),
@@ -59,7 +58,7 @@ function createFeatures(earthquakeData) {
     pointToLayer: circleMarkers
   });
 
-  // Passing the layer to the createMap function
+  // Passing the layer to the createMap function.
   createMap(earthquakes);
 }
 
@@ -80,16 +79,40 @@ function createFeatures(earthquakeData) {
       Earthquakes: earthquakes
     };
   
-    // Creating map object
+// Creating map object.
 let myMap = L.map("map", {
     center: [39.0902, -96.7129],
     zoom: 4.5,
     layers: [street, earthquakes]
   });
 
-    L.control.layers(baseMaps, overlayMaps, {
-        collapsed: false
-      }).addTo(myMap);
+// Adding layer control to map.
+L.control.layers(baseMaps, overlayMaps, {
+    collapsed: false
+  }).addTo(myMap);
     
-    }
+    
 
+// Creating legend.
+let legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function () {
+    let div = L.DomUtil.create('div', 'info legend');
+    let depths = [-10, 10, 30, 50, 70, 90];
+    
+    // Creating heading for legend.
+    let heading = '<h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Depth <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;of <br> Earthquake</h3><hr>'
+        div.innerHTML = heading;
+    
+    // Creating text and displaying corresponding colour for each range.
+    for (let i = 0; i < depths.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + colouring(depths[i] + 1) + '"></i> ' + depths[i] + (depths[i + 1] ? ' - ' + depths[i + 1] + '<br>' : ' + ');
+    };
+
+    return div;
+};
+
+// Adding legend to map.
+legend.addTo(myMap);
+}
